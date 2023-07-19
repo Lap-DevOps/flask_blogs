@@ -1,6 +1,9 @@
-from flask import Flask, render_template, url_for, request
+from flask import Flask, render_template, url_for, request, flash
 
 app = Flask(__name__)
+
+# Установка секретного ключа
+app.secret_key = 'your_secret_key_here'
 
 menu = [{'name': "Setup", "url": 'install-flask'},
         {'name': "First App", "url": 'first-app'},
@@ -29,6 +32,12 @@ def profile(username, path):
 def contact():
     if request.method == "POST":
         print(request.form)
+
+        if len(request.form['username']) > 2:
+            flash("Message send !", category='success')
+        else:
+            flash("Error !", category='error')
+
         for key, value in request.form.items():
             print(f"Key: {key} -  Value: {value}")
     return render_template("contact.html", title="Feedback", menu=menu)

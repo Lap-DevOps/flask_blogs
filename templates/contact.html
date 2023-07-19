@@ -1,23 +1,26 @@
-{% extends "base.html" %} 
-{% block content %} 
-    {{ super() }}
-    <form action="/contact" method="post" class="form-contact">
-        <p>
-            <label for="username">Name:</label>
-            <input type="text" id="username" name="username" value="" required />
-        </p>
-        <p>
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" value="" required />
-        </p>
-        <p>
-            <label for="message">Message:</label>
-        </p>
-        <p>
-            <textarea name="message" id="message" cols="40" rows="7"></textarea>
-        </p>
-        <p>
-            <input type="submit" value="Send">
-        </p>
-    </form>
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+{% for cat, msg in get_flashed_messages(True)%}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+<form action="/contact" method="post" class="form-contact">
+    <p>
+        <label for="username">Name:</label>
+        <input type="text" id="username" name="username" value="" required />
+    </p>
+    <p>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="" required />
+    </p>
+    <p>
+        <label for="message">Message:</label>
+    </p>
+    <p>
+        <textarea name="message" id="message" cols="40" rows="7"></textarea>
+    </p>
+    <p>
+        <input type="submit" value="Send" />
+    </p>
+</form>
 {% endblock %}

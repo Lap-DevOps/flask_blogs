@@ -42,25 +42,38 @@ ul.mainmenu li a {
   text-decoration: none;
 }
 
-ul.mainmenu li a:hover{
-    color: #FDA83d;
+ul.mainmenu li a:hover {
+  color: #fda83d;
 }
 
-div.content{
-    margin: 10px;
+div.content {
+  margin: 10px;
 }
 
 .form-contact label {
-    display: inline-block;
-    min-width: 80px;
+  display: inline-block;
+  min-width: 80px;
 }
 
-.form-contact p {margin: 10px 0 10 px 0;}
-.form-contact input[type=submit], textarea{
-    font-size: 16px;
+.form-contact p {
+  margin: 10px 0 10 px 0;
+}
+.form-contact input[type="submit"],
+textarea {
+  font-size: 16px;
 }
 
-.flash {padding: 10px;}
-.flash.success{
-    border: 1px solid #21DB56;
+.flash {
+  padding: 10px;
+}
+.flash.success {
+  border: 1px solid #21db56;
+  background: #aeffc5;
+  width: 406px;
+}
+
+.flash.error {
+  border: 1px solid #ff4343;
+  background: #ff9c9c;
+  width: 406px;
 }
