@@ -1,0 +1,6 @@
+{% extends 'base.html' %}  {# Обратите внимание на закрывающую одинарную кавычку после 'base.html' #}
+{% block content %}
+    {{ super() }}  {# Вызываем блок content из родительского шаблона #}
+    <p>404. Page not found, redirect to <a href="{{ url_for('index') }}">main</a> page</p>
+{% endblock %}
+
