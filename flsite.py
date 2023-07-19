@@ -43,5 +43,10 @@ def contact():
     return render_template("contact.html", title="Feedback", menu=menu)
 
 
+@app.errorhandler(404)
+def pageNotFound(error):
+    return render_template("page404.html", title="Page not found", menu=menu), 404
+
+
 if __name__ == '__main__':
     app.run(debug=True)
