@@ -1,11 +1,11 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request
 
 app = Flask(__name__)
 
 menu = [{'name': "Setup", "url": 'install-flask'},
         {'name': "First App", "url": 'first-app'},
         {'name': "Contact", "url": 'contact'},
-]
+        ]
 
 
 @app.route('/')
@@ -21,8 +21,17 @@ def about():
 
 
 @app.route("/profile/<path:username>/<path>")
-def profile(username,path):
+def profile(username, path):
     return f'User : {username}, {path}'
+
+
+@app.route("/contact", methods=["POST", "GET"])
+def contact():
+    if request.method == "POST":
+        print(request.form)
+        for key, value in request.form.items():
+            print(f"Key: {key} -  Value: {value}")
+    return render_template("contact.html", title="Feedback", menu=menu)
 
 
 if __name__ == '__main__':
