@@ -54,7 +54,7 @@ def index():
     db = get_db()
     dbase = FDataBase(db)
     # print (dbase.getMenu())
-    return render_template("index.html", menu=dbase.getMenu())
+    return render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
 
 
 @app.route('/add_post', methods=['POST', "GET"])
@@ -72,6 +72,17 @@ def addPost():
         else:
             flash("Error adding post", category='error')
     return render_template('add_post.html', menu=dbase.getMenu(), title="Adding post")
+
+
+@app.route('/post/<int:id_post>')
+def showPost(id_post):
+    db = get_db()
+    dbase = FDataBase(db)
+    title, post = dbase.getPost(id_post)
+    if not title:
+        abort(404)
+
+    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
 
 
 @app.route('/about')
