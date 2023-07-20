@@ -53,6 +53,7 @@ div.content {
 .form-contact label {
   display: inline-block;
   min-width: 80px;
+  margin-right: 10px;
 }
 
 .form-contact p {

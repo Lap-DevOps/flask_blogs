@@ -5,12 +5,10 @@ from flask import Flask, render_template, url_for, request, flash, session, redi
 
 from FDataBase import FDataBase
 
-
 # config
 DATABASE = 'tmp/flsite.db'
 DEBUG = True
 SECRET_KEY = 'sdlkslksdlklksdfklekllsd'
-
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -32,11 +30,11 @@ def create_db():
         db.close()
 
 
-
 def get_db():
     if not hasattr(g, 'link_db'):
         g.link_db = connect_db()
     return g.link_db
+
 
 @app.teardown_appcontext
 def close_db(error):
@@ -57,6 +55,23 @@ def index():
     dbase = FDataBase(db)
     # print (dbase.getMenu())
     return render_template("index.html", menu=dbase.getMenu())
+
+
+@app.route('/add_post', methods=['POST', "GET"])
+def addPost():
+    db = get_db()
+    dbase = FDataBase(db)
+
+    if request.method == "POST":
+        if len(request.form['name']) > 4 and len(request.form['post']) > 10:
+            res = dbase.addPost(request.form['name'], request.form['post'])
+            if not res:
+                flash("Error adding post", category='error')
+            else:
+                flash("Post added", category='success')
+        else:
+            flash("Error adding post", category='error')
+    return render_template('add_post.html', menu=dbase.getMenu(), title="Adding post")
 
 
 @app.route('/about')

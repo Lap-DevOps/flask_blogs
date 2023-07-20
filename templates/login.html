@@ -1,4 +1,7 @@
-{% extends 'base.html' %} {% block content %} {{super()}}
+{% extends 'base.html' %} 
+
+{% block content %} 
+{{super()}}
 <form action="/login" method="post" class="form-contact">
   <p>
     <label>Name :</label><input type="text" name="username" value="" required >
