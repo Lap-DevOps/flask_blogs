@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS posts (
 id integer primary key  autoincrement,
 title text not null,
 text text not null,
+url text not null,
 time integer not null
 );
