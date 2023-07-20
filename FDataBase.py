@@ -32,6 +32,11 @@ class FDataBase:
                 print("Article with this url exits")
                 return False
 
+            base = url_for('static', filename='images_html')
+            text = re.sub(r"(?P<tag><img\s+[^>]*src=)(?P<quote>[\"'])(?P<url>.+?)(?P=quote)>",
+                          "\\g<tag>" + base + "/\\g<url>>",
+                          text)
+
             tm = math.floor(time.time())
             self.__cur.execute('INSERT INTO posts VALUES(NULL, ?,?,?,?)', (title, text, url, tm))
             self.__db.commit()
@@ -57,11 +62,6 @@ class FDataBase:
             self.__cur.execute(f'SELECT id, title, text, url FROM posts ORDER BY time DESC')
             res = self.__cur.fetchall()
             if res:
-                base = url_for('static', filename='images_html')
-                # text = re.sub(r"(?P<tag><img\s+[^>]*src=)(?P<quote>[\"'])(?P<url>.+?)(?P=quote)>",
-                #               "\\g<tag>" + base + "/\\g<url>>",
-                #               res['text'])
-
                 return res
         except sqlite3.Error as e:
             print("Error read database" + str(e))
