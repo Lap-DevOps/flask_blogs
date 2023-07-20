@@ -1,9 +1,46 @@
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort
+import os
+import sqlite3
+
+from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g
+
+from FDataBase import FDataBase
+
+# config
+DATABASE = 'tmp/flsite.db'
+DEBUG = True
+SECRET_KEY = 'sdlkslksdlklksdfklekllsd'
 
 app = Flask(__name__)
+app.config.from_object(__name__)
+app.secret_key = SECRET_KEY
+app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
 
-# Установка секретного ключа
-app.secret_key = 'your_secret_key_here'
+
+def connect_db():
+    conn = sqlite3.connect(app.config['DATABASE'])
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def create_db():
+    db = connect_db()
+    with app.open_resource("sq_db.sql", mode='r') as f:
+        db.cursor().executescript(f.read())
+        db.commit()
+        db.close()
+
+
+def get_db():
+    if not hasattr(g, 'link_db'):
+        g.link_db = connect_db()
+    return g.link_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'link_db'):
+        g.link_db.close()
+
 
 menu = [{'name': "Setup", "url": 'install-flask'},
         {'name': "First App", "url": 'first-app'},
@@ -14,16 +51,44 @@ menu = [{'name': "Setup", "url": 'install-flask'},
 @app.route('/')
 def index():
     print(url_for('index'))
-    return render_template("index.html", menu=menu)
+    db = get_db()
+    dbase = FDataBase(db)
+    # print (dbase.getMenu())
+    return render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
+
+
+@app.route('/add_post', methods=['POST', "GET"])
+def addPost():
+    db = get_db()
+    dbase = FDataBase(db)
+
+    if request.method == "POST":
+        if len(request.form['name']) > 4 and len(request.form['post']) > 10:
+            res = dbase.addPost(request.form['name'], request.form['post'])
+            if not res:
+                flash("Error adding post", category='error')
+            else:
+                flash("Post added", category='success')
+        else:
+            flash("Error adding post", category='error')
+    return render_template('add_post.html', menu=dbase.getMenu(), title="Adding post")
+
+
+@app.route('/post/<int:id_post>')
+def showPost(id_post):
+    db = get_db()
+    dbase = FDataBase(db)
+    title, post = dbase.getPost(id_post)
+    if not title:
+        abort(404)
+
+    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
 
 
 @app.route('/about')
 def about():
     print(url_for('about'))
     return render_template("about.html", title="About", menu=menu)
-
-
-
 
 
 @app.route("/contact", methods=["POST", "GET"])
