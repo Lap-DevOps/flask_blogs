@@ -2,7 +2,8 @@ import datetime
 import os
 import sqlite3
 
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response
+from flask import Flask, render_template, url_for, request, flash, session, abort, g, make_response, redirect
+from werkzeug.security import generate_password_hash
 
 from FDataBase import FDataBase
 
@@ -44,6 +45,16 @@ def close_db(error):
         g.link_db.close()
 
 
+dbase = None
+
+
+@app.before_request
+def before_request():
+    global dbase
+    db = get_db()
+    dbase = FDataBase(db)
+
+
 menu = [{'name': "Setup", "url": 'install-flask'},
         {'name': "First App", "url": 'first-app'},
         {'name': "Contact", "url": 'contact'},
@@ -54,8 +65,6 @@ menu = [{'name': "Setup", "url": 'install-flask'},
 def index():
     session.permanent = True
     print(url_for('index'))
-    db = get_db()
-    dbase = FDataBase(db)
     # print (dbase.getMenu())
     content = render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
     res = make_response(content)
@@ -68,9 +77,6 @@ def index():
 
 @app.route('/add_post', methods=['POST', "GET"])
 def addPost():
-    db = get_db()
-    dbase = FDataBase(db)
-
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post']) > 10:
             res = dbase.addPost(request.form['name'], request.form['post'], request.form['url'])
@@ -85,8 +91,6 @@ def addPost():
 
 @app.route('/post/<alias>')
 def showPost(alias):
-    db = get_db()
-    dbase = FDataBase(db)
     title, post = dbase.getPost(alias)
     if not title:
         abort(404)
@@ -129,13 +133,31 @@ def profile(username):
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
-    if 'userLogged' in session:
-        return redirect(url_for('profile', username=session['userLogged']))
-    elif request.method == "POST" and request.form['username'] == 'Mike' and request.form['psw'] == '123':
-        session['userLogged'] = request.form['username']
-        return redirect(url_for('profile', username=session['userLogged']))
+    # if 'userLogged' in session:
+    #     return redirect(url_for('profile', username=session['userLogged']))
+    # elif request.method == "POST" and request.form['username'] == 'Mike' and request.form['psw'] == '123':
+    #     session['userLogged'] = request.form['username']
+    #     return redirect(url_for('profile', username=session['userLogged']))
 
-    return render_template('login.html', title="Login page", menu=menu)
+    return render_template('login.html', title="Login page", menu=dbase.getMenu())
+
+
+@app.route('/register', methods=["POST", "GET"])
+def register():
+    if request.method == "POST":
+        if len(request.form['name']) > 4 and len(request.form['email']) > 4 \
+                and len(request.form['psw']) > 4 and request.form['psw'] == request.form['psw2']:
+            hash = generate_password_hash(request.form['psw'])
+            res = dbase.addUser(request.form['name'], request.form["email"], hash)
+            if res:
+                flash("User added successfully!", 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Error adding user', 'error')
+        else:
+            flash('Incorrect input', 'error')
+
+    return render_template('register.html', title="Registration", menu=dbase.getMenu())
 
 
 if __name__ == '__main__':
