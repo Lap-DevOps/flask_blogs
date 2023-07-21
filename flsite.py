@@ -1,7 +1,8 @@
+import datetime
 import os
 import sqlite3
 
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g
+from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response
 
 from FDataBase import FDataBase
 
@@ -14,6 +15,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+app.permanent_session_lifetime = datetime.timedelta(days=1)
 
 
 def connect_db():
@@ -50,11 +52,18 @@ menu = [{'name': "Setup", "url": 'install-flask'},
 
 @app.route('/')
 def index():
+    session.permanent = True
     print(url_for('index'))
     db = get_db()
     dbase = FDataBase(db)
     # print (dbase.getMenu())
-    return render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
+    content = render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
+    res = make_response(content)
+    res.headers['Content-Type'] = 'text/html'
+    res.headers['Server'] = 'flasksite'
+    res.set_cookie('is logged', "True")
+
+    return res
 
 
 @app.route('/add_post', methods=['POST', "GET"])
