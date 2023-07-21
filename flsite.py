@@ -3,9 +3,11 @@ import os
 import sqlite3
 
 from flask import Flask, render_template, url_for, request, flash, session, abort, g, make_response, redirect
-from werkzeug.security import generate_password_hash
+from flask_login import LoginManager, login_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
+from UserLogin import UserLogin
 
 # config
 DATABASE = 'tmp/flsite.db'
@@ -17,6 +19,13 @@ app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
 app.permanent_session_lifetime = datetime.timedelta(days=1)
+login_manager = LoginManager(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    print('load user')
+    return UserLogin().fromDB(user_id, dbase)
 
 
 def connect_db():
@@ -90,6 +99,7 @@ def addPost():
 
 
 @app.route('/post/<alias>')
+@login_required
 def showPost(alias):
     title, post = dbase.getPost(alias)
     if not title:
@@ -133,11 +143,14 @@ def profile(username):
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
-    # if 'userLogged' in session:
-    #     return redirect(url_for('profile', username=session['userLogged']))
-    # elif request.method == "POST" and request.form['username'] == 'Mike' and request.form['psw'] == '123':
-    #     session['userLogged'] = request.form['username']
-    #     return redirect(url_for('profile', username=session['userLogged']))
+    if request.method == "POST":
+        user = dbase.getUserByEmail(request.form['email'])
+        if user and check_password_hash(user['psw'], request.form['psw']):
+            userlogin = UserLogin().create(user)
+            login_user(userlogin)
+            return redirect(url_for('index'))
+
+        flash('Login/password incorrect ', 'error')
 
     return render_template('login.html', title="Login page", menu=dbase.getMenu())
 
