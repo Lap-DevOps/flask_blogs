@@ -67,3 +67,50 @@ class FDataBase:
             print("Error read database" + str(e))
 
         return []
+
+    def addUser(self, name, email, hpsw):
+        try:
+            self.__cur.execute(f"SELECT COUNT() as 'count' FROM users WHERE email LIKE '{email}'")
+            res = self.__cur.fetchone()
+            if res['count'] > 0:
+                print("User exists")
+                return False
+
+            tm = math.floor(time.time())
+            self.__cur.execute('INSERT INTO users VALUES(null,?,?,?,?)', (name, email, hpsw, tm))
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print('Error ' + str(e))
+            return False
+
+        return True
+
+    def getUser(self, user_id):
+        try:
+            self.__cur.execute(f"SELECT * FROM users WHERE id = {user_id} LIMIT 1")
+            res = self.__cur.fetchone()
+            if not res:
+                print('User not found')
+                return False
+            return res
+        except sqlite3.Error as e:
+            print("Error reading from database" + str(e))
+
+        return False
+
+    def getUserByEmail(self, email):
+        try:
+            self.__cur.execute("SELECT * FROM users WHERE email = ? LIMIT 1", (email,))
+
+            res = self.__cur.fetchone()
+            print(res)
+            if not res:
+                print("User not found")
+                return False
+
+            return res
+
+        except sqlite3.Error as e:
+            print("Error read database" + str(e))
+
+        return False
