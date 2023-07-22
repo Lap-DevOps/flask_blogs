@@ -77,7 +77,7 @@ class FDataBase:
                 return False
 
             tm = math.floor(time.time())
-            self.__cur.execute('INSERT INTO users VALUES(null,?,?,?,?)', (name, email, hpsw, tm))
+            self.__cur.execute('INSERT INTO users VALUES(null,?,?,?,NULL, ?)', (name, email, hpsw, tm))
             self.__db.commit()
         except sqlite3.Error as e:
             print('Error ' + str(e))
@@ -114,3 +114,16 @@ class FDataBase:
             print("Error read database" + str(e))
 
         return False
+
+    def updateUserAvatar(self, avatar, user_id):
+        if not avatar:
+            return False
+
+        try:
+            binary = sqlite3.Binary(avatar)
+            self.__cur.execute(f"UPDATE users SET avatar = ? WHERE id = ?"), (binary, user_id)
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print('Error updating avatar' + str(e))
+            return False
+        return True
