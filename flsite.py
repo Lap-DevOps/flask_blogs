@@ -3,7 +3,7 @@ import os
 import sqlite3
 
 from flask import Flask, render_template, url_for, request, flash, session, abort, g, make_response, redirect
-from flask_login import LoginManager, login_user, login_required
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
@@ -20,6 +20,9 @@ app.secret_key = SECRET_KEY
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
 app.permanent_session_lifetime = datetime.timedelta(days=1)
 login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = "Please log in !"
+login_manager.login_message_category = 'success'
 
 
 @login_manager.user_loader
@@ -134,22 +137,25 @@ def pageNotFound(error):
     return render_template("page404.html", title="Page not found", menu=menu), 404
 
 
-@app.route('/profile/<username>')
-def profile(username):
-    if "userLogged" not in session or session['userLogged'] != username:
-        abort(401)
-    return f"Profile of user - {username}"
+# @app.route('/profile/<username>')
+# def profile(username):
+#     if "userLogged" not in session or session['userLogged'] != username:
+#         abort(401)
+#     return f"Profile of user - {username}"
 
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('profile'))
     if request.method == "POST":
         user = dbase.getUserByEmail(request.form['email'])
         # print(user)
         if user and check_password_hash(user['psw'], request.form['psw']):
             userlogin = UserLogin().create(user)
-            login_user(userlogin)
-            return redirect(url_for('index'))
+            rm = True if request.form.get('remainme') else False
+            login_user(userlogin, remember=rm)
+            return redirect(request.args.get("next") or url_for('profile'))
 
         flash('Login/password incorrect ', 'error')
 
@@ -172,6 +178,21 @@ def register():
             flash('Incorrect input', 'error')
 
     return render_template('register.html', title="Registration", menu=dbase.getMenu())
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("You logged out", 'success')
+    return redirect(url_for('login'))
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    return f"""<p><a href="{url_for('logout')}"> Log out</a>
+                <p>user info: {current_user.get_id()}"""
 
 
 if __name__ == '__main__':
