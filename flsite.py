@@ -73,7 +73,7 @@ menu = [{'name': "Setup", "url": 'install-flask'},
 @app.route('/')
 def index():
     session.permanent = True
-    print(url_for('index'))
+    # print(url_for('index'))
     # print (dbase.getMenu())
     content = render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
     res = make_response(content)
@@ -145,6 +145,7 @@ def profile(username):
 def login():
     if request.method == "POST":
         user = dbase.getUserByEmail(request.form['email'])
+        # print(user)
         if user and check_password_hash(user['psw'], request.form['psw']):
             userlogin = UserLogin().create(user)
             login_user(userlogin)

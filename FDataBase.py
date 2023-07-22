@@ -100,8 +100,10 @@ class FDataBase:
 
     def getUserByEmail(self, email):
         try:
-            self.__cur.execute(f"SELECT * FROM users WHERE email = {email} LIMIT 1 ")
+            self.__cur.execute("SELECT * FROM users WHERE email = ? LIMIT 1", (email,))
+
             res = self.__cur.fetchone()
+            print(res)
             if not res:
                 print("User not found")
                 return False
