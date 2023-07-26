@@ -63,6 +63,14 @@ div.content {
 textarea {
   font-size: 16px;
 }
+.form-contact .invalid {
+  display: inline-block;
+  background: #ff9898;
+}
+
+.form-contact .invalid-feedback {
+  color: #cc0000;
+}
 
 .flash {
   padding: 10px;
