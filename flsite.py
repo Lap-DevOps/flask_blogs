@@ -3,11 +3,12 @@ import os
 import sqlite3
 
 from flask import Flask, render_template, url_for, request, flash, session, abort, g, make_response, redirect
-from flask_login import LoginManager, login_user, login_required, current_user, logout_user
+from flask_login import LoginManager, login_required, current_user, logout_user, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
 from UserLogin import UserLogin
+from forms import LoginForm
 
 # config
 DATABASE = 'tmp/flsite.db'
@@ -149,18 +150,31 @@ def pageNotFound(error):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-    if request.method == "POST":
-        user = dbase.getUserByEmail(request.form['email'])
-        # print(user)
-        if user and check_password_hash(user['psw'], request.form['psw']):
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = dbase.getUserByEmail(form.email.data)
+        if user and check_password_hash(user['psw'], form.psw.data):
             userlogin = UserLogin().create(user)
-            rm = True if request.form.get('remainme') else False
+            rm = form.remember.data
             login_user(userlogin, remember=rm)
             return redirect(request.args.get("next") or url_for('profile'))
 
         flash('Login/password incorrect ', 'error')
 
-    return render_template('login.html', title="Login page", menu=dbase.getMenu())
+    return render_template("login.html", menu=dbase.getMenu(), title="Login", form=form)
+    # if request.method == "POST":
+    #     user = dbase.getUserByEmail(request.form['email'])
+    #     # print(user)
+    #     if user and check_password_hash(user['psw'], request.form['psw']):
+    #         userlogin = UserLogin().create(user)
+    #         rm = True if request.form.get('remainme') else False
+    #         login_user(userlogin, remember=rm)
+    #         return redirect(request.args.get("next") or url_for('profile'))
+    #
+    #     flash('Login/password incorrect ', 'error')
+    #
+    # return render_template('login.html', title="Login page", menu=dbase.getMenu())
 
 
 @app.route('/register', methods=["POST", "GET"])
