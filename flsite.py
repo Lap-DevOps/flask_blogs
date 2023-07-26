@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
 from UserLogin import UserLogin
-from forms import LoginForm
+from forms import LoginForm, RegisterForm
 
 # config
 DATABASE = 'tmp/flsite.db'
@@ -179,20 +179,16 @@ def login():
 
 @app.route('/register', methods=["POST", "GET"])
 def register():
-    if request.method == "POST":
-        if len(request.form['name']) > 4 and len(request.form['email']) > 4 \
-                and len(request.form['psw']) > 4 and request.form['psw'] == request.form['psw2']:
-            hash = generate_password_hash(request.form['psw'])
-            res = dbase.addUser(request.form['name'], request.form["email"], hash)
+    form = RegisterForm()
+    if form.validate_on_submit():
+            hash = generate_password_hash(form.psw.data)
+            res = dbase.addUser(form.name.data, form.email.data, hash)
             if res:
                 flash("User added successfully!", 'success')
                 return redirect(url_for('login'))
             else:
                 flash('Error adding user', 'error')
-        else:
-            flash('Incorrect input', 'error')
-
-    return render_template('register.html', title="Registration", menu=dbase.getMenu())
+    return render_template('register.html', title="Registration", menu=dbase.getMenu(), form=form)
 
 
 @app.route('/logout')
