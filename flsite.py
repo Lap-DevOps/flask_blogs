@@ -13,6 +13,7 @@ from UserLogin import UserLogin
 DATABASE = 'tmp/flsite.db'
 DEBUG = True
 SECRET_KEY = 'sdlkslksdlklksdfklekllsd'
+MAX_CONTENT_LENGTH = 1024 * 1024
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -67,10 +68,10 @@ def before_request():
     dbase = FDataBase(db)
 
 
-menu = [{'name': "Setup", "url": 'install-flask'},
-        {'name': "First App", "url": 'first-app'},
-        {'name': "Contact", "url": 'contact'},
-        ]
+# menu = [{'name': "Setup", "url": 'install-flask'},
+#         {'name': "First App", "url": 'first-app'},
+#         {'name': "Contact", "url": 'contact'},
+#         ]
 
 
 @app.route('/')
@@ -111,10 +112,10 @@ def showPost(alias):
     return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
 
 
-@app.route('/about')
-def about():
-    print(url_for('about'))
-    return render_template("about.html", title="About", menu=menu)
+# @app.route('/about')
+# def about():
+#     print(url_for('about'))
+#     return render_template("about.html", title="About", menu=menu)
 
 
 @app.route("/contact", methods=["POST", "GET"])
@@ -129,12 +130,12 @@ def contact():
 
         for key, value in request.form.items():
             print(f"Key: {key} -  Value: {value}")
-    return render_template("contact.html", title="Feedback", menu=menu)
+    return render_template("contact.html", title="Feedback", menu=dbase.getMenu())
 
 
 @app.errorhandler(404)
 def pageNotFound(error):
-    return render_template("page404.html", title="Page not found", menu=menu), 404
+    return render_template("page404.html", title="Page not found", menu=dbase.getMenu()), 404
 
 
 # @app.route('/profile/<username>')
@@ -191,8 +192,38 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    return f"""<p><a href="{url_for('logout')}"> Log out</a>
-                <p>user info: {current_user.get_id()}"""
+    return render_template('profile.html', title="Profile", menu=dbase.getMenu())
+
+
+@app.route('/userava')
+@login_required
+def userava():
+    img = current_user.getAvatar(app)
+    if not img:
+        return ''
+
+    h = make_response(img)
+    h.headers["Content-Type"] = 'image/png'
+
+    return h
+
+
+@app.route('/upload', methods=["POST", "GET"])
+@login_required
+def upload():
+    if request.method == "POST":
+        file = request.files['file']
+        if file and current_user.verifyExt(file.filename):
+            try:
+                img = file.read()
+                res = dbase.updateUserAvatar(img, current_user.get_id())
+                if not res:
+                    return redirect(url_for('profile'))
+                flash("Avatar updated", 'success')
+            except FileNotFoundError as e:
+                flash("File not read", 'error')
+
+    return redirect(url_for('profile'))
 
 
 if __name__ == '__main__':
