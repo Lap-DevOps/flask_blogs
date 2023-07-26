@@ -87,7 +87,7 @@ ul.list-posts {
 }
 
 ul.list-posts li {
-  margin: 20px 0 0 0 ;
+  margin: 20px 0 0 0;
   border: 1px solid #eee;
 }
 
@@ -102,12 +102,15 @@ ul.list-posts .annonce {
   padding: 10px 5px 10px 5px;
 }
 
-.profile-ava{
-  width: 130px;
+.profile-ava {
+  width: 230px;
+
   text-align: center;
   overflow: hidden;
   background: #eee;
   padding: 10px;
+  background-size: cover;
+  background-position: center;
 }
 
 .profile-load img {
@@ -115,18 +118,19 @@ ul.list-posts .annonce {
   height: auto;
 }
 
-.profile-load{
+.profile-load {
   margin-top: 10px;
   overflow: hidden;
   max-width: 150px;
 }
 
-.profile-load input[type=submit], input[type=file]{
+.profile-load input[type="submit"],
+input[type="file"] {
   width: 100%;
   font-size: 18px;
 }
 
-.profile-load p{
+.profile-load p {
   padding: 0;
   margin: 5px 0 0 0;
 }
@@ -140,4 +144,8 @@ ul.profile-info {
   margin: 10px 0 0 0;
   padding: 0;
   color: #7e6535;
+}
+
+ul.profile-info li {
+  margin-top: 10px;
 }
