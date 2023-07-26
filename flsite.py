@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
 from UserLogin import UserLogin
+from admin.admin import admin
 from forms import LoginForm, RegisterForm
 
 # config
@@ -20,6 +21,8 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+app.register_blueprint(admin, url_prefix="/admin")
+
 app.permanent_session_lifetime = datetime.timedelta(days=1)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -181,13 +184,13 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-            hash = generate_password_hash(form.psw.data)
-            res = dbase.addUser(form.name.data, form.email.data, hash)
-            if res:
-                flash("User added successfully!", 'success')
-                return redirect(url_for('login'))
-            else:
-                flash('Error adding user', 'error')
+        hash = generate_password_hash(form.psw.data)
+        res = dbase.addUser(form.name.data, form.email.data, hash)
+        if res:
+            flash("User added successfully!", 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Error adding user', 'error')
     return render_template('register.html', title="Registration", menu=dbase.getMenu(), form=form)
 
 
