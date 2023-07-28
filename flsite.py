@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
 from UserLogin import UserLogin
+from admin.admin import admin
 from forms import LoginForm, RegisterForm
 
 # config
@@ -20,6 +21,8 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+app.register_blueprint(admin, url_prefix="/admin")
+
 app.permanent_session_lifetime = datetime.timedelta(days=1)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -69,17 +72,9 @@ def before_request():
     dbase = FDataBase(db)
 
 
-# menu = [{'name': "Setup", "url": 'install-flask'},
-#         {'name': "First App", "url": 'first-app'},
-#         {'name': "Contact", "url": 'contact'},
-#         ]
-
-
 @app.route('/')
 def index():
     session.permanent = True
-    # print(url_for('index'))
-    # print (dbase.getMenu())
     content = render_template("index.html", menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
     res = make_response(content)
     res.headers['Content-Type'] = 'text/html'
@@ -112,17 +107,9 @@ def showPost(alias):
 
     return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
 
-
-# @app.route('/about')
-# def about():
-#     print(url_for('about'))
-#     return render_template("about.html", title="About", menu=menu)
-
-
 @app.route("/contact", methods=["POST", "GET"])
 def contact():
     if request.method == "POST":
-        print(request.form)
 
         if len(request.form['username']) > 2:
             flash("Message send !", category='success')
@@ -138,12 +125,6 @@ def contact():
 def pageNotFound(error):
     return render_template("page404.html", title="Page not found", menu=dbase.getMenu()), 404
 
-
-# @app.route('/profile/<username>')
-# def profile(username):
-#     if "userLogged" not in session or session['userLogged'] != username:
-#         abort(401)
-#     return f"Profile of user - {username}"
 
 
 @app.route('/login', methods=["POST", "GET"])
@@ -163,31 +144,20 @@ def login():
         flash('Login/password incorrect ', 'error')
 
     return render_template("login.html", menu=dbase.getMenu(), title="Login", form=form)
-    # if request.method == "POST":
-    #     user = dbase.getUserByEmail(request.form['email'])
-    #     # print(user)
-    #     if user and check_password_hash(user['psw'], request.form['psw']):
-    #         userlogin = UserLogin().create(user)
-    #         rm = True if request.form.get('remainme') else False
-    #         login_user(userlogin, remember=rm)
-    #         return redirect(request.args.get("next") or url_for('profile'))
-    #
-    #     flash('Login/password incorrect ', 'error')
-    #
-    # return render_template('login.html', title="Login page", menu=dbase.getMenu())
+
 
 
 @app.route('/register', methods=["POST", "GET"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-            hash = generate_password_hash(form.psw.data)
-            res = dbase.addUser(form.name.data, form.email.data, hash)
-            if res:
-                flash("User added successfully!", 'success')
-                return redirect(url_for('login'))
-            else:
-                flash('Error adding user', 'error')
+        hash = generate_password_hash(form.psw.data)
+        res = dbase.addUser(form.name.data, form.email.data, hash)
+        if res:
+            flash("User added successfully!", 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Error adding user', 'error')
     return render_template('register.html', title="Registration", menu=dbase.getMenu(), form=form)
 
 
