@@ -4,7 +4,9 @@ from flask import Blueprint, request, redirect, url_for, flash, render_template,
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 
-menu = [{'url': '.index', 'title': 'Panel'},
+menu = [{'url': 'index', 'title': 'Main'},
+        {'url': '.listpubs', 'title': 'Pubs list'},
+        {'url': '.listusers', 'title': 'User list'},
         {'url': '.logout', 'title': 'Log out'}]
 
 db = None
@@ -68,8 +70,8 @@ def logout():
     return redirect(url_for('.login'))
 
 
-@admin.route("/list-pubs")
-def list_pubs():
+@admin.route('/list-pubs')
+def listpubs():
     if not isLogged():
         return redirect(url_for('.login'))
 
@@ -84,3 +86,21 @@ def list_pubs():
             print("Error read data" + str(e))
 
     return render_template("admin/listpubs.html", title="Publication list", menu=menu, list=list)
+
+
+@admin.route('list-users')
+def listusers():
+    if not isLogged():
+        return redirect((url_for('.login')))
+
+    list = []
+    if db:
+        try:
+            cur = db.cursor()
+            cur.execute(f"SELECT name, email FROM users ORDER BY time DESC")
+            list = cur.fetchall()
+            print (list)
+        except sqlite3.Error as e:
+            print("Error read data" + str(e))
+
+    return render_template("admin/listusers.html", title="Users list", menu=menu, list=list)
