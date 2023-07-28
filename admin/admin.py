@@ -99,7 +99,6 @@ def listusers():
             cur = db.cursor()
             cur.execute(f"SELECT name, email FROM users ORDER BY time DESC")
             list = cur.fetchall()
-            print (list)
         except sqlite3.Error as e:
             print("Error read data" + str(e))
 
