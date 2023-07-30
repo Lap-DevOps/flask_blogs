@@ -40,12 +40,8 @@ def main():
 
 @app.route("/register", methods=("POST", "GET"))
 def register():
-    print(request)
-    print(request.method)
-    print(request.form)
-    if request.method == "POST":
 
-        print('session submit')
+    if request.method == "POST":
         # здесь должна быть проверка корректности введенных данных
         try:
             hash = generate_password_hash(request.form['psw'])
