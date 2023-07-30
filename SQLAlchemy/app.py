@@ -40,13 +40,19 @@ def main():
 
 @app.route("/register", methods=("POST", "GET"))
 def register():
+    print(request)
+    print(request.method)
+    print(request.form)
     if request.method == "POST":
+
+        print('session submit')
         # здесь должна быть проверка корректности введенных данных
         try:
             hash = generate_password_hash(request.form['psw'])
             u = Users(email=request.form['email'], psw=hash)
             db.session.add(u)
             db.session.flush()
+
 
             p = Profiles(name=request.form['name'], old=request.form['old'],
                          city=request.form['city'], user_id = u.id)
